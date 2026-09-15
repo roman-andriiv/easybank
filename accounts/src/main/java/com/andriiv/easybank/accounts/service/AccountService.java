@@ -11,4 +11,12 @@ public interface AccountService {
    * @param customerDto - {@link CustomerDto} Object
    */
   void createAccount(CustomerDto customerDto);
+
+  /**
+   * Fetches account details for the customer identified by the given mobile number.
+   *
+   * @param mobileNumber the customer's registered mobile number
+   * @return the customer's account details
+   */
+  CustomerDto fetchAccountDetails(String mobileNumber);
 }
