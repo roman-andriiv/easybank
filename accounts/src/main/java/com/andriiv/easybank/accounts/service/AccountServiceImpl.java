@@ -1,10 +1,13 @@
 package com.andriiv.easybank.accounts.service;
 
 import com.andriiv.easybank.accounts.constants.AccountConstants;
+import com.andriiv.easybank.accounts.dto.AccountDto;
 import com.andriiv.easybank.accounts.dto.CustomerDto;
 import com.andriiv.easybank.accounts.entity.Account;
 import com.andriiv.easybank.accounts.entity.Customer;
 import com.andriiv.easybank.accounts.exception.CustomerAlreadyExistsException;
+import com.andriiv.easybank.accounts.exception.ResourceNotFoundException;
+import com.andriiv.easybank.accounts.mapper.AccountsMapper;
 import com.andriiv.easybank.accounts.mapper.CustomerMapper;
 import com.andriiv.easybank.accounts.repository.AccountRepository;
 import com.andriiv.easybank.accounts.repository.CustomerRepository;
@@ -42,6 +45,32 @@ public class AccountServiceImpl implements AccountService {
     accountRepository.save(createNewAccountForCustomer(savedCustomer));
   }
 
+  /**
+   * Fetches account details for the customer identified by the given mobile number.
+   *
+   * @param mobileNumber the customer's registered mobile number
+   * @return the customer's account details
+   * @throws ResourceNotFoundException when no customer matches the mobile number
+   */
+  @Override
+  public CustomerDto fetchAccountDetails(String mobileNumber) {
+    Customer customer =
+        customerRepository
+            .findByMobileNumber(mobileNumber)
+            .orElseThrow(
+                () -> new ResourceNotFoundException("Customer", "mobileNumber", mobileNumber));
+    Account account =
+        accountRepository
+            .findByCustomerId(customer.getCustomerId())
+            .orElseThrow(
+                () ->
+                    new ResourceNotFoundException(
+                        "Account", "customerId", customer.getCustomerId().toString()));
+    CustomerDto customerDto = CustomerMapper.mapToCustomerDto(customer, new CustomerDto());
+    customerDto.setAccount(AccountsMapper.mapToAccountsDto(account, new AccountDto()));
+    return customerDto;
+  }
+
   private Account createNewAccountForCustomer(Customer customer) {
     Account account = new Account();
     account.setCustomerId(customer.getCustomerId());
@@ -49,7 +78,7 @@ public class AccountServiceImpl implements AccountService {
     account.setAccountType(AccountConstants.SAVINGS);
     account.setBranchAddress(faker.address().fullAddress());
     account.setCreatedAt(LocalDateTime.now(ZoneOffset.UTC));
-    account.setCreatedBy("Anonymous");
+    account.setCreatedBy("Application");
     return account;
   }
 }
