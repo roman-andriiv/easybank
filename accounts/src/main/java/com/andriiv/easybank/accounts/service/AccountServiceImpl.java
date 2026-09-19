@@ -18,6 +18,7 @@ import java.util.Optional;
 import lombok.AllArgsConstructor;
 import net.datafaker.Faker;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @AllArgsConstructor
@@ -72,6 +73,47 @@ public class AccountServiceImpl implements AccountService {
   @Override
   public List<CustomerDto> fetchAllAccountsDetails() {
     return customerRepository.findAll().stream().map(this::mapCustomerWithAccount).toList();
+  }
+
+  /**
+   * Updates account and customer details based on the provided customer details.
+   *
+   * @param customerDto - {@link CustomerDto} Object
+   * @return boolean indicating if the update of account details is successful or not
+   * @throws ResourceNotFoundException when account or customer is not found
+   */
+  @Override
+  @Transactional
+  public boolean updateCustomerAccountDetails(CustomerDto customerDto) {
+    boolean isUpdated = false;
+    if (customerDto == null) {
+      return false;
+    }
+    AccountDto accountDto = customerDto.getAccount();
+    if (accountDto != null && accountDto.getAccountNumber() != null) {
+      Account account =
+          accountRepository
+              .findById(accountDto.getAccountNumber())
+              .orElseThrow(
+                  () ->
+                      new ResourceNotFoundException(
+                          "Account", "accountNumber", accountDto.getAccountNumber().toString()));
+      AccountsMapper.mapToAccounts(accountDto, account);
+      account = accountRepository.save(account);
+
+      Long customerId = account.getCustomerId();
+      Customer customer =
+          customerRepository
+              .findById(customerId)
+              .orElseThrow(
+                  () ->
+                      new ResourceNotFoundException(
+                          "Customer", "customerId", customerId.toString()));
+      CustomerMapper.mapToCustomer(customerDto, customer);
+      customerRepository.save(customer);
+      isUpdated = true;
+    }
+    return isUpdated;
   }
 
   private CustomerDto mapCustomerWithAccount(Customer customer) {

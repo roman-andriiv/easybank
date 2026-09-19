@@ -27,4 +27,12 @@ public interface AccountService {
    * @return a list of customer account details
    */
   List<CustomerDto> fetchAllAccountsDetails();
+
+  /**
+   * Updates account and customer details based on the provided customer details.
+   *
+   * @param customerDto - {@link CustomerDto} Object
+   * @return boolean indicating if the update of account details is successful or not
+   */
+  boolean updateCustomerAccountDetails(CustomerDto customerDto);
 }

@@ -11,6 +11,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -39,5 +40,17 @@ public class AccountsController {
   @GetMapping("/fetchAll")
   public ResponseEntity<List<CustomerDto>> fetchAllAccountsDetails() {
     return ResponseEntity.ok(accountService.fetchAllAccountsDetails());
+  }
+
+  @PutMapping("/update")
+  public ResponseEntity<Response> updateAccountDetails(@RequestBody CustomerDto customerDto) {
+    boolean isUpdated = accountService.updateCustomerAccountDetails(customerDto);
+    if (isUpdated) {
+      return ResponseEntity.status(HttpStatus.OK)
+          .body(new Response(AccountConstants.STATUS_200, AccountConstants.MESSAGE_200));
+    } else {
+      return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED)
+          .body(new Response(AccountConstants.STATUS_417, AccountConstants.MESSAGE_417_UPDATE));
+    }
   }
 }
