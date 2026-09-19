@@ -1,6 +1,7 @@
 package com.andriiv.easybank.accounts.service;
 
 import com.andriiv.easybank.accounts.dto.CustomerDto;
+import java.util.List;
 
 /** Service interface for account-related operations. */
 public interface AccountService {
@@ -19,4 +20,11 @@ public interface AccountService {
    * @return the customer's account details
    */
   CustomerDto fetchAccountDetails(String mobileNumber);
+
+  /**
+   * Fetches account details for all customers.
+   *
+   * @return a list of customer account details
+   */
+  List<CustomerDto> fetchAllAccountsDetails();
 }

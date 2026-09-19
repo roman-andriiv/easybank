@@ -4,6 +4,7 @@ import com.andriiv.easybank.accounts.constants.AccountConstants;
 import com.andriiv.easybank.accounts.dto.CustomerDto;
 import com.andriiv.easybank.accounts.dto.Response;
 import com.andriiv.easybank.accounts.service.AccountService;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -33,5 +34,10 @@ public class AccountsController {
   public ResponseEntity<CustomerDto> fetchAccountDetails(@RequestParam String mobileNumber) {
     CustomerDto body = accountService.fetchAccountDetails(mobileNumber);
     return ResponseEntity.ok(body);
+  }
+
+  @GetMapping("/fetchAll")
+  public ResponseEntity<List<CustomerDto>> fetchAllAccountsDetails() {
+    return ResponseEntity.ok(accountService.fetchAllAccountsDetails());
   }
 }

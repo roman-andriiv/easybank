@@ -13,6 +13,7 @@ import com.andriiv.easybank.accounts.repository.AccountRepository;
 import com.andriiv.easybank.accounts.repository.CustomerRepository;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.List;
 import java.util.Optional;
 import lombok.AllArgsConstructor;
 import net.datafaker.Faker;
@@ -59,6 +60,21 @@ public class AccountServiceImpl implements AccountService {
             .findByMobileNumber(mobileNumber)
             .orElseThrow(
                 () -> new ResourceNotFoundException("Customer", "mobileNumber", mobileNumber));
+    return mapCustomerWithAccount(customer);
+  }
+
+  /**
+   * Fetches account details for all customers.
+   *
+   * @return a list of customer account details
+   * @throws ResourceNotFoundException when a customer has no associated account
+   */
+  @Override
+  public List<CustomerDto> fetchAllAccountsDetails() {
+    return customerRepository.findAll().stream().map(this::mapCustomerWithAccount).toList();
+  }
+
+  private CustomerDto mapCustomerWithAccount(Customer customer) {
     Account account =
         accountRepository
             .findByCustomerId(customer.getCustomerId())
