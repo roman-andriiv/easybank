@@ -9,6 +9,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -40,6 +41,18 @@ public class AccountsController {
   @GetMapping("/fetchAll")
   public ResponseEntity<List<CustomerDto>> fetchAllAccountsDetails() {
     return ResponseEntity.ok(accountService.fetchAllAccountsDetails());
+  }
+
+  @DeleteMapping("/delete")
+  public ResponseEntity<Response> deleteAccountDetails(@RequestParam String mobileNumber) {
+    boolean isDeleted = accountService.deleteAccount(mobileNumber);
+    if (isDeleted) {
+      return ResponseEntity.status(HttpStatus.OK)
+          .body(new Response(AccountConstants.STATUS_200, AccountConstants.MESSAGE_200));
+    } else {
+      return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED)
+          .body(new Response(AccountConstants.STATUS_417, AccountConstants.MESSAGE_417_DELETE));
+    }
   }
 
   @PutMapping("/update")

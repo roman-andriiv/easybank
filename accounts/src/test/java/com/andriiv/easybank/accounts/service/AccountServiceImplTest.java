@@ -41,7 +41,7 @@ class AccountServiceImplTest {
 
   @Test
   void createAccount_whenCustomerDoesNotExist_savesCustomerAndAccount() {
-    CustomerDto customerDto = customerDto("Jane Doe", "jane.doe@example.com", "9876543210");
+    CustomerDto customerDto = createCustomerDto();
 
     when(customerRepository.findByMobileNumber(customerDto.getMobileNumber()))
         .thenReturn(Optional.empty());
@@ -83,7 +83,7 @@ class AccountServiceImplTest {
 
   @Test
   void createAccount_whenCustomerAlreadyExists_throwsExceptionAndDoesNotSave() {
-    CustomerDto customerDto = customerDto("Jane Doe", "jane.doe@example.com", "9876543210");
+    CustomerDto customerDto = createCustomerDto();
     Customer existingCustomer = new Customer();
 
     when(customerRepository.findByMobileNumber(customerDto.getMobileNumber()))
@@ -161,11 +161,11 @@ class AccountServiceImplTest {
     verify(accountRepository).findByCustomerId(2L);
   }
 
-  private CustomerDto customerDto(String name, String email, String mobileNumber) {
+  private CustomerDto createCustomerDto() {
     CustomerDto customerDto = new CustomerDto();
-    customerDto.setName(name);
-    customerDto.setEmail(email);
-    customerDto.setMobileNumber(mobileNumber);
+    customerDto.setName("Jane Doe");
+    customerDto.setEmail("jane.doe@example.com");
+    customerDto.setMobileNumber("9876543210");
     return customerDto;
   }
 
@@ -300,5 +300,30 @@ class AccountServiceImplTest {
 
     assertThat(isUpdated).isFalse();
     verify(accountRepository, never()).findById(any());
+  }
+
+  @Test
+  void deleteAccount_whenCustomerExists_deletesAccountAndCustomerAndReturnsTrue() {
+    Customer customer = customer(10L, "Jane Doe", "jane@example.com", "9876543210");
+    when(customerRepository.findByMobileNumber("9876543210")).thenReturn(Optional.of(customer));
+
+    boolean isDeleted = accountService.deleteAccount("9876543210");
+
+    assertThat(isDeleted).isTrue();
+    verify(accountRepository).deleteByCustomerId(10L);
+    verify(customerRepository).deleteById(10L);
+  }
+
+  @Test
+  void deleteAccount_whenCustomerDoesNotExist_throwsExceptionAndDoesNotDelete() {
+    when(customerRepository.findByMobileNumber("9876543210")).thenReturn(Optional.empty());
+
+    assertThatThrownBy(() -> accountService.deleteAccount("9876543210"))
+        .isInstanceOf(ResourceNotFoundException.class)
+        .hasMessageContaining(
+            "Customer not found with the given input data mobileNumber:9876543210");
+
+    verify(accountRepository, never()).deleteByCustomerId(any());
+    verify(customerRepository, never()).deleteById(any());
   }
 }

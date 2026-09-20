@@ -4,6 +4,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -273,5 +274,43 @@ class AccountsControllerTest {
         .andExpect(
             jsonPath("$.message")
                 .value("Customer not found with the given input data customerId:10"));
+  }
+
+  @Test
+  void deleteAccount_whenSuccess_returns200Ok() throws Exception {
+    when(accountService.deleteAccount("9876543210")).thenReturn(true);
+
+    mockMvc
+        .perform(delete("/api/accounts/delete").param("mobileNumber", "9876543210"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.statusCode").value(AccountConstants.STATUS_200))
+        .andExpect(jsonPath("$.message").value(AccountConstants.MESSAGE_200));
+
+    verify(accountService).deleteAccount("9876543210");
+  }
+
+  @Test
+  void deleteAccount_whenDeletionFails_returns417ExpectationFailed() throws Exception {
+    when(accountService.deleteAccount("9876543210")).thenReturn(false);
+
+    mockMvc
+        .perform(delete("/api/accounts/delete").param("mobileNumber", "9876543210"))
+        .andExpect(status().isExpectationFailed())
+        .andExpect(jsonPath("$.statusCode").value(AccountConstants.STATUS_417))
+        .andExpect(jsonPath("$.message").value(AccountConstants.MESSAGE_417_DELETE));
+  }
+
+  @Test
+  void deleteAccount_whenCustomerDoesNotExist_returns404NotFound() throws Exception {
+    when(accountService.deleteAccount("9876543210"))
+        .thenThrow(new ResourceNotFoundException("Customer", "mobileNumber", "9876543210"));
+
+    mockMvc
+        .perform(delete("/api/accounts/delete").param("mobileNumber", "9876543210"))
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.errorCode").value("404 NOT_FOUND"))
+        .andExpect(
+            jsonPath("$.message")
+                .value("Customer not found with the given input data mobileNumber:9876543210"));
   }
 }

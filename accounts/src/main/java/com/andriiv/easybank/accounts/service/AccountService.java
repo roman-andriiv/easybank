@@ -35,4 +35,12 @@ public interface AccountService {
    * @return boolean indicating if the update of account details is successful or not
    */
   boolean updateCustomerAccountDetails(CustomerDto customerDto);
+
+  /**
+   * Deletes the account and customer identified by the given mobile number.
+   *
+   * @param mobileNumber the customer's registered mobile number
+   * @return boolean indicating if the account deletion was successful
+   */
+  boolean deleteAccount(String mobileNumber);
 }
